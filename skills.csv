@@ -1,0 +1,12 @@
+skill,skill_level,interest_level,category
+Java,3.2,5,language
+C,2,4,language
+C++,3,5,language
+HTML,5,4,language
+CSS,4,4,language
+Angular,3.2,4.8,framework
+Photoshop,3,2,software
+Design,4,1,other
+Laravel,2,5,framework
+SQL,2,4,language
+React,0,4,framework
