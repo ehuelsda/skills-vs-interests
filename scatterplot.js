@@ -1,6 +1,6 @@
-var width = 700, height = 700;
+var width = 800, height = 700;
 var categories = ["language", "framework", "software", "other"];
-var colors = ["blue", "purple", "pink", "darkblue"];
+var colors = ["rgba(255,155,255,.5)", "rgba(255,100,0,.5)", "rgba(200,25,25,.5)", "rgba(80,255,90,.5)"];
 
 var svg = d3.select("#my_plot")
   .append("svg")
@@ -13,16 +13,18 @@ var svg = d3.select("#my_plot")
   //X-axis
   var x = d3.scaleLinear()
     .domain([0,5])
-    .range([0,400]);
+    .range([0,400])
   svg.append("g")
     .attr("transform", "translate(0,400)")
     .style("font-size", ".9rem")
+    .style("stroke-width", 1.5)
     .call(d3.axisBottom(x));
   //X-axis title
   svg.append("text")
     .attr("text-anchor", "end")
     .attr("x", width - 300)
     .attr("y", height - 250)
+    .attr("fill", "#dadada")
     .text("Skill");
 
   //Y-axis
@@ -31,6 +33,7 @@ var svg = d3.select("#my_plot")
     .range([400,0]);
   svg.append("g")
     .style("font-size", ".9rem")
+    .style("stroke-width", 1.5)
     .call(d3.axisLeft(y));
 
   //Y-axis title
@@ -39,6 +42,7 @@ var svg = d3.select("#my_plot")
     .attr("transform", "rotate(-50)")
     .attr("y", -50)
     .attr("x", 0)
+    .attr("fill", "#dadada")
     .text("Interest");
 
 d3.csv('skills.csv', function(data) {
@@ -48,54 +52,66 @@ d3.csv('skills.csv', function(data) {
     .domain(categories)
     .range(colors);
 
-  // Tooltip
-  var tooltip = d3.select("#my_plot")
-    .append("div")
-    .style("opacity", 0)
-    .attr("class", "tooltip")
-    .style("background-color", "white")
-    .style("border", "solid")
-    .style("border-width", "1px")
-    .style("border-radius", "5px")
-    .style("padding", "10px")
-    .style("font-family", "sans-serif")
-    .style("display", "inline-block")
-    .style("position", "absolute");
+  var xVar = "skill_level",
+      yVar = "interest_level";
 
-    var mouseover = function(data) {
-      tooltip
-        .style("opacity", 1)
-        .html(data.skill)
-        .style("left", (d3.mouse(this)[0])+150 + "px")
-        .style("top", (d3.mouse(this)[1])+75 + "px")
-    };
 
-    var mouseleave = function(data) {
-      tooltip
-        .transition()
-        .duration(200)
-        .style("opacity", 0)
+
+    var simulation = d3.forceSimulation([data])
+    .force('collision', d3.forceCollide().radius(10))
+    .stop()
+
+    
+          
+    for (var i = 0; i < 150; ++i) {
+      simulation.tick();
     }
 
-  svg.append('g')
+
+    svg.append('g')
     .selectAll("dot")
     .data([data])
     .enter()
     .append("circle")
-      .attr("cx", x(data.skill_level))
-      .attr("cy", y(data.interest_level)+10)
+      .attr("cx", x(data[xVar]))
+      .attr("cy", y(data[yVar])+10)
       .attr("r", 10)
+      .style("stroke", "#dadada")
+      .style("stroke-width",  2)
       .style("fill", function(data){ return color(data.category)})
-    .on("mouseover", mouseover)
-    .on("mouseleave", mouseleave)
+
+
+
+    svg.selectAll("labels")
+      .data([data])
+      .enter()
+      .append("text")
+        .text(data.skill)
+        .attr("x", x(data[xVar]) + 20)
+        .attr("y", y(data[yVar]) + 20)
+        .attr("fill", "#dadada")
+        .attr("class", "labels")
+
+        var legend = svg.selectAll(".legend")
+        .data(categories)
+        .enter().append("g")
+        .attr("class", "legend")
+        .attr("transform", function(d, i) { return "translate(-110," + i * 30 + ")"; });
+
+        legend.append("circle")
+          .attr("cx", width - 10)
+          .attr("r", 10)
+          .style("fill", color)
+          .style("stroke", "#dadada")
+          .style("stroke-width",  2)
+         
+
+        legend.append("text")
+          .attr("x", width - 30)
+          .attr("y", 9)
+          .attr("dy", "-.15em")
+          .attr("fill", "#dadada")
+          .style("text-anchor", "end")
+          .text(function(d){return d;});
+
 })
-
-svg.append("text")
-.attr("text-anchor", "end")
-.attr("transform", "rotate(-50)")
-.attr("y", 350)
-.attr("x", width)
-.text("Test");
-
-
-
