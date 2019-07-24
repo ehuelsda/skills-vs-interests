@@ -36,12 +36,12 @@ function createPlot(skills){
     const radius = 15
 
     // Colouring
-    const colors = ["palevioletred", "orange", "#5490d5", "lightgreen"]
+    const colors = ["palevioletred", "orange", "#5490d5", "lightgreen", "#ff6f6c"]
     const textColor = "#e0e0e0"
     const plotColor = "#e0e0e0"
 
     // Content
-    const categories = ["language", "framework", "software", "other"] //must match the used categories in skills.json
+    const categories = ["all", "language", "framework", "software", "other"] //must match the used categories in skills.json and first element must be "all"
     const xAxisTitle = "Skill"
     const yAxisTitle = "Interest"
     const legendHeading = "Click to highlight category"
@@ -101,7 +101,38 @@ function createPlot(skills){
         .domain(categories)
         .range(colors);
 
+    /** Add tooltips */
 
+    var tooltip = d3.select("#my_plot")
+        .append("div").classed("tooltip", true)
+        .style("opacity", 0)
+        .style("display", "inline-block")
+        .style("background-color", textColor)
+        .style("color", backgroundColor)
+        .style("padding", "1rem")
+        .style("border-radius", ".25rem")
+        .style("position", "absolute")
+        .style("max-width", "300px")
+
+    var showTooltip = (node) => {
+        tooltip
+            .html(node.description)
+            .style("left", node.x + 125 +  "px")
+            .style("top", node.y + 25 + "px")
+            .transition()
+            .duration(100)
+            .style("opacity", 1)
+    }
+
+    var hideTooltip = () => {
+        tooltip
+            .transition()
+            .duration(200)
+            .style("opacity", 0)
+    }
+
+    /** Build plot */
+    // Parse the data to nodes
     var nodes = skills.map(function(node, index) {
         return {
         index: index,
@@ -113,52 +144,63 @@ function createPlot(skills){
         };
     });
 
-    //spread overlapping nodes
-    var simulation = d3.forceSimulation(nodes)
-        .force('collision', d3.forceCollide().radius(radius))
-        .stop()
-
-    for (var i = 0; i <= nodes.length; ++i) {
-        simulation.tick();
-    }
-
-
-    //append nodes to graph
-    var node = svg.append("g").classed("nodes", true)
-        .selectAll("dot")
-        .data(nodes)
-        .enter()
-        
-    node.append("circle")
-        .attr("class", (d) => {
-        return "node " + d.category
-        })
-        .attr("cx", (d) => {return d.x})
+    //update position of nodes
+    var updateNodes = () => { 
+        svg.selectAll(".node").attr("cx", (d) => {return d.x})
         .attr("cy", (d) => {return d.y})
+        svg.selectAll(".label").attr("x", (d) => {return d.x + radius + 5})
+        .attr("y", (d) => {return d.y + (radius/2)})
+      }
+
+    //spread overlapping nodes
+    var simulation = () => 
+        d3.forceSimulation(nodes)
+            .force('x', d3.forceX().x((n)=>{return n.x}).strength(.15))
+            .force('charge', d3.forceManyBody().strength(-4))
+            .on("tick", updateNodes)
+
+
+    var drawPlot = (nodes) =>{
+        d3.select(".nodes").remove();
+        d3.select(".labels").remove();    
+
+        var node = svg.append("g").classed("nodes", true)
+        .selectAll("circle")
+        .data(nodes)
+        
+        node.enter().append("circle")
+        .attr("class", (d) => {
+            return "node " + d.category
+        })
         .attr("r", radius)
         .style("fill", (d)=>{return d.fill})
+        .style("opacity", ".8")
         .on("mouseover", function(d){
-        svg.selectAll(".node").style("opacity", ".5")
-        var category = d3.select(this).attr("class").split(" ")[1];
-        d3.selectAll("." + category).style("opacity", "1");
+            svg.selectAll(".node").style("opacity", ".5")
+            var category = d3.select(this).attr("class").split(" ")[1];
+            d3.selectAll("." + category).style("opacity", ".8");
+            showTooltip(d)
         })
         .on("mouseleave", function(){
-        svg.selectAll(".node").style("opacity", "1")
+            svg.selectAll(".node").style("opacity", ".8")
+            hideTooltip()
         });
-    
-    //add labels to nodes
-    svg.append("g").classed("labels",true)
+        
+        
+        //add labels to nodes
+        svg.append("g").classed("labels",true)
         .selectAll("dot")
         .data(nodes)
         .enter()
         .append("text")
-        .text((d) => d.skill)
-        .attr("class", (d) => {
-            return d.category
-        })
-        .attr("x", (d) => {return d.x + radius + 5})
-        .attr("y", (d) => {return d.y + (radius/2)})
-        .attr("fill", "#dadada")
+            .text((d) => d.skill)
+            .attr("class", (d) => {
+            return d.category + " label"
+            })
+            .attr("fill", "#dadada")
+            
+            updateNodes();
+        }
         
     //add a legend
     var legend = svg.append("g").classed("legend", true)
@@ -168,16 +210,20 @@ function createPlot(skills){
         .attr("transform", function(d, i) { return "translate(-110," + i * 40 + ")"; })
 
         //highlight clicked category
-        .on("click", function(d){
-        svg.selectAll(".node").style("opacity", ".5")
-        d3.selectAll("." + d3.select(this).select("text").text()).style("opacity", "1");
-        })
-    
+    legend.on("click", function(d){
+        if(d3.select(this).select("text").text() === categories[0]) 
+            svg.selectAll(".node").style("opacity", ".8")
+        else {
+            svg.selectAll(".node").style("opacity", ".5")
+            d3.selectAll("." + d3.select(this).select("text").text()).style("opacity", "1")
+        }
+      })
+
     legend.append("circle")
         .attr("cx", svgWidth - radius)
         .attr("r", radius)
         .style("fill", color)
-    
+
     legend.append("text")
         .attr("x", svgWidth - radius - 30)
         .attr("y", (radius/2))
@@ -185,7 +231,14 @@ function createPlot(skills){
         .attr("fill", textColor)
         .style("text-anchor", "end")
         .text(function(d){return d;})
-    
+
     //add heading to legend
-    d3.select(".legend").append("text").text(legendHeading).attr("fill", textColor).attr("x", svgWidth-300).attr("y", -30); 
+    d3.select(".legend").append("text").text(legendHeading).attr("fill", textColor).attr("x", svgWidth-350).attr("y", -30)
+
+
+    //initialise plot
+    drawPlot(nodes);
+    setTimeout(function(){
+        simulation()
+    }, 300)
 }

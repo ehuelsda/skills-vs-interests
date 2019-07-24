@@ -3,12 +3,13 @@ const svgWidth = 800, svgHeight = 700, plotHeight = 400, plotWidth = 400
 const radius = 15
 
 // Colouring
-const colors = ["palevioletred", "orange", "#5490d5", "lightgreen"]
+const colors = ["palevioletred", "orange", "#5490d5", "lightgreen", "#ff6f6c"]
 const textColor = "#e0e0e0"
 const plotColor = "#e0e0e0"
+const backgroundColor = "#252525"
 
 // Content
-const categories = ["language", "framework", "software", "other"] //must match the used categories in skills.json
+const categories = ["all", "language", "framework", "software", "other"] //must match the used categories in skills.json and first element must be "all"
 const xAxisTitle = "Skill"
 const yAxisTitle = "Interest"
 const legendHeading = "Click to highlight category"
@@ -69,6 +70,39 @@ var color = d3.scaleOrdinal()
   .range(colors);
 
 
+  /** Add tooltips */
+
+  var tooltip = d3.select("#my_plot")
+      .append("div").classed("tooltip", true)
+      .style("opacity", 0)
+      .style("display", "inline-block")
+      .style("background-color", textColor)
+      .style("color", backgroundColor)
+      .style("padding", "1rem")
+      .style("border-radius", ".25rem")
+      .style("position", "absolute")
+      .style("max-width", "300px")
+
+  var showTooltip = (node) => {
+      tooltip
+          .html(node.description)
+          .style("left", node.x + 125 +  "px")
+          .style("top", node.y + 25 + "px")
+          .transition()
+          .duration(100)
+          .style("opacity", 1)
+          console.log(node)
+  }
+
+  var hideTooltip = () => {
+      tooltip
+          .transition()
+          .duration(200)
+          .style("opacity", 0)
+  }
+
+
+
 /** Create plot 
  * 
  * Uncomment json and comment csv to use json file
@@ -81,60 +115,73 @@ d3.csv("./skills.csv").then(function(d){
       index: index,
       category: node.category,
       skill: node.skill,
+      description: node.description,
       x: x(node.skill_level),
       y: y(node.interest_level),
       fill: color(node.category),
     };
   });
   
-  //spread overlapping nodes
-  var simulation = d3.forceSimulation(nodes)
-    .force('collision', d3.forceCollide().radius(13))
-    .stop()
-  
-  for (var i = 0; i <= nodes.length; ++i) {
-    simulation.tick();
+  //update position of nodes
+  var updateNodes = () => { 
+    svg.selectAll(".node").attr("cx", (d) => {return d.x})
+      .attr("cy", (d) => {return d.y})
+    svg.selectAll(".label").attr("x", (d) => {return d.x + radius + 5})
+      .attr("y", (d) => {return d.y + (radius/2)})
   }
-  
-  var mouseleave = function(){
-    svg.selectAll(".node").style("opacity", "1")
-  } 
 
-  //append nodes to graph
-  var node = svg.append("g").classed("nodes", true)
-    .selectAll("dot")
+  //spread overlapping nodes
+  var simulation = () => 
+    d3.forceSimulation(nodes)
+        .force('x', d3.forceX().x((n)=>{return n.x}).strength(.15))
+        .force('charge', d3.forceManyBody().strength(-4))
+        .on("tick", updateNodes)
+
+
+  var mouseleave = function(){
+    svg.selectAll(".node").style("opacity", ".8")
+  } 
+  var drawPlot = (nodes) =>{
+    d3.select(".nodes").remove();
+    d3.select(".labels").remove();    
+
+    var node = svg.append("g").classed("nodes", true)
+    .selectAll("circle")
     .data(nodes)
-    .enter()
-  
-  node.append("circle")
+    
+    node.enter().append("circle")
     .attr("class", (d) => {
-      //category must be placed first for mouseover function to work
-      return d.category + " node"
+        return "node " + d.category
     })
-    .attr("cx", (d) => {return d.x})
-    .attr("cy", (d) => {return d.y})
     .attr("r", radius)
     .style("fill", (d)=>{return d.fill})
+    .style("opacity", ".8")
     .on("mouseover", function(d){
-      svg.selectAll(".node").style("opacity", ".5")
-      var category = d3.select(this).attr("class").split(" ")[0];
-      d3.selectAll("." + category).style("opacity", "1");
+        svg.selectAll(".node").style("opacity", ".5")
+        var category = d3.select(this).attr("class").split(" ")[1];
+        d3.selectAll("." + category).style("opacity", ".8");
+        showTooltip(d)
     })
-    .on("mouseleave", mouseleave);
-  
-  //add labels to nodes
-  svg.append("g").classed("labels",true)
+    .on("mouseleave", function(){
+        svg.selectAll(".node").style("opacity", ".8")
+        hideTooltip()
+    });
+    
+    
+    //add labels to nodes
+    svg.append("g").classed("labels",true)
     .selectAll("dot")
     .data(nodes)
     .enter()
     .append("text")
-      .text((d) => d.skill)
-      .attr("class", (d) => {
-        return d.category
-      })
-      .attr("x", (d) => {return d.x + radius + 5})
-      .attr("y", (d) => {return d.y + (radius/2)})
-      .attr("fill", textColor)
+        .text((d) => d.skill)
+        .attr("class", (d) => {
+        return d.category + " label"
+        })
+        .attr("fill", "#dadada")
+        
+        updateNodes();
+    }
 
   //add a legend
   var legend = svg.append("g").classed("legend", true)
@@ -144,9 +191,13 @@ d3.csv("./skills.csv").then(function(d){
     .attr("transform", function(d, i) { return "translate(-110," + i * 40 + ")"; })
 
     //highlight clicked category
-    .on("click", function(d){
-      svg.selectAll(".node").style("opacity", ".5")
-      d3.selectAll("." + d3.select(this).select("text").text()).style("opacity", "1");
+    legend.on("click", function(d){
+      if(d3.select(this).select("text").text() === categories[0]) 
+          svg.selectAll(".node").style("opacity", ".8")
+      else {
+          svg.selectAll(".node").style("opacity", ".5")
+          d3.selectAll("." + d3.select(this).select("text").text()).style("opacity", "1")
+      }
     })
   
   legend.append("circle")
@@ -165,5 +216,10 @@ d3.csv("./skills.csv").then(function(d){
   //add heading to legend
   d3.select(".legend").append("text").text(legendHeading).attr("fill", textColor).attr("x", svgWidth-300).attr("y", -30);
   
+  //Initialise plot
+  drawPlot(nodes);
+  setTimeout(function(){
+      simulation()
+  }, 300)
   
 })

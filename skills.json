@@ -2,78 +2,91 @@
     "skill": "Java",
     "skill_level": 3,
     "interest_level": 4, 
-    "category": "language"
+    "category": "language",
+    "description": "...."
 },
 {
     "skill": "C++",
     "skill_level": 3,
     "interest_level": 4, 
-    "category": "language"
+    "category": "language",
+    "description": "...."
 },
 {
     "skill": "C",
     "skill_level": 2,
     "interest_level": 4, 
-    "category": "language"
+    "category": "language",
+    "description": "...."
 },
 {
     "skill": "HTML",
     "skill_level": 4,
     "interest_level": 4, 
-    "category": "language"
+    "category": "language",
+    "description": "...."
 },
 {
     "skill": "Design",
     "skill_level": 4,
     "interest_level": 1, 
-    "category": "other"
+    "category": "other",
+    "description": "...."
 },
 {
     "skill": "CSS",
     "skill_level": 4,
     "interest_level": 4, 
-    "category": "language"
+    "category": "language",
+    "description": "...."
 },
 {
     "skill": "Angular",
     "skill_level": 3,
     "interest_level": 5, 
-    "category": "framework"
+    "category": "framework",
+    "description": "...."
 },
 {
     "skill": "Photoshop",
     "skill_level": 3,
     "interest_level": 2, 
-    "category": "software"
+    "category": "software",
+    "description": "...."
 },
 {
     "skill": "Illustrator",
     "skill_level": 3,
     "interest_level": 3, 
-    "category": "software"
+    "category": "software",
+    "description": "...."
 },
 {
     "skill": "Laravel",
     "skill_level": 3,
     "interest_level": 5, 
-    "category": "framework"
+    "category": "framework",
+    "description": "...."
 },
 {
     "skill": "React",
     "skill_level": 1,
     "interest_level": 5, 
-    "category": "framework"
+    "category": "framework",
+    "description": "...."
 },
 {
     "skill": "SQL",
     "skill_level": 2,
     "interest_level": 4, 
-    "category": "language"
+    "category": "language",
+    "description": "...."
 },
 {
     "skill": "Ionic",
     "skill_level": 3,
     "interest_level": 4, 
-    "category": "framework"
+    "category": "framework",
+    "description": "...."
 }
 ]
