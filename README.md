@@ -10,10 +10,12 @@ To use the normal js version, just add an empty div with the id "my_plot" in you
 To use the react version, just add the react-scatterplot.js to your React app, and change the filename to Skills.js.
 
 ## Contributing
-These are features I'm planning on implementing. Contributions are welcome.
+These are features I'm planning on implementing.
 - [x] Prevent overlapping labels
-- [ ] Add tooltip for descriptions
-- [ ] Add some animations
+- [x] Add tooltip for descriptions
+- [x] Add some animations
+
+Contributions and suggestions for improvement are more than welcome! 
 
 ## Credits
 Thanks to <a href="https://www.yan-holtz.com/">Yan Holz<a> and <a href="https://github.com/holtzy/D3-graph-gallery">d3.js Graph Gallery</a> for the description on how to build scatterplots. 
