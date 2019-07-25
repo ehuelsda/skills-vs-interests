@@ -11,7 +11,7 @@ To use the react version, just add the react-scatterplot.js to your React app, a
 
 ## Contributing
 These are features I'm planning on implementing. Contributions are welcome.
-- [ ] Preventing overlapping labels
+- [x] Prevent overlapping labels
 - [ ] Add tooltip for descriptions
 - [ ] Add some animations
 
