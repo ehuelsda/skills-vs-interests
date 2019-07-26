@@ -53,6 +53,7 @@ function createPlot(skills) {
 
     /** Create SVG */
     var svg = d3.select("#my_plot")
+        .style("position", "relative")
         .append("svg")
         .attr("width", svgWidth)
         .attr("height", svgHeight)
@@ -118,7 +119,8 @@ function createPlot(skills) {
         .style("max-width", "300px");
 
     var showTooltip = (node) => {
-        tooltip
+        if (node.description)
+            tooltip
             .html(node.description)
             .style("left", node.x + 125 + "px")
             .style("top", node.y + 25 + "px")
