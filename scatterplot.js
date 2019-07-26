@@ -87,13 +87,14 @@ var tooltip = d3.select("#my_plot")
   .style("max-width", "300px");
 
 var showTooltip = (node) => {
-  tooltip
-    .html(node.description)
-    .style("left", node.x + 125 + "px")
-    .style("top", node.y + 25 + "px")
-    .transition()
-    .duration(100)
-    .style("opacity", 1);
+  if(node.description)
+    tooltip
+      .html(node.description)
+      .style("left", node.x + 125 + "px")
+      .style("top", node.y + 25 + "px")
+      .transition()
+      .duration(100)
+      .style("opacity", 1);
 }
 
 var hideTooltip = () => {
